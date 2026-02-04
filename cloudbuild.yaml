@@ -12,7 +12,7 @@ steps:
     args:
       - compute
       - ssh
-      - gopi-vm
+      - gopi-webapp
       - --zone=us-central1-a
       - --command
       - |
