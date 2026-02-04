@@ -2,21 +2,36 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
+  # Step 1: Build Docker image using GitHub commit SHA
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/web-app-311/gopi-webapp', '.']
+    args:
+      - build
+      - -t
+      - gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
+      - .
 
+  # Step 2: Push the commit-tagged image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/web-app-311/gopi-webapp']
+    args:
+      - push
+      - gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
 
+  # Step 3: Deploy to VM via SSH
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - compute
       - ssh
       - gopi-webapp
       - --zone=us-central1-a
+      - --project=web-app-311
       - --command
       - |
-        docker pull gcr.io/web-app-311/gopi-webapp
+        docker pull gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
         docker stop web || true
         docker rm web || true
-        docker run -d -p 80:80 --name web gcr.io/web-app-311/gopi-webapp
+        docker run -d -p 80:80 --name web gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
+        sleep 3
+        docker ps | grep web
+
+images:
+  - gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
