@@ -2,7 +2,7 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # Step 1: Build Docker image using GitHub commit SHA
+  # Step 1: Build Docker image with commit SHA
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build
@@ -10,13 +10,13 @@ steps:
       - gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
       - .
 
-  # Step 2: Push the commit-tagged image to Google Container Registry
+  # Step 2: Push image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - push
       - gcr.io/web-app-311/gopi-webapp:$SHORT_SHA
 
-  # Step 3: Deploy to VM via SSH
+  # Step 3: SSH into VM and deploy container
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - compute
